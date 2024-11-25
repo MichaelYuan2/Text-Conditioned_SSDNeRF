@@ -1,0 +1,9 @@
+srun: job 47485 queued and waiting for resources
+srun: job 47485 has been allocated resources
+Obtaining file:///w/284/zhichenren/Text-Conditioned_SSDNeRF/lib/ops/shencoder
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Installing collected packages: shencoder
+  DEPRECATION: Legacy editable install of shencoder==0.0.0 from file:///w/284/zhichenren/Text-Conditioned_SSDNeRF/lib/ops/shencoder (setup.py develop) is deprecated. pip 25.0 will enforce this behaviour change. A possible replacement is to add a pyproject.toml or enable --use-pep517, and use setuptools >= 64. If the resulting installation is not behaving as expected, try using --config-settings editable_mode=compat. Please consult the setuptools documentation for more information. Discussion can be found at https://github.com/pypa/pip/issues/11457
+  Running setup.py develop for shencoder
+Successfully installed shencoder

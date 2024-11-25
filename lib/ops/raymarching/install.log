@@ -1,0 +1,9 @@
+srun: job 47486 queued and waiting for resources
+srun: job 47486 has been allocated resources
+Obtaining file:///w/284/zhichenren/Text-Conditioned_SSDNeRF/lib/ops/raymarching
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Installing collected packages: raymarching
+  DEPRECATION: Legacy editable install of raymarching==0.0.0 from file:///w/284/zhichenren/Text-Conditioned_SSDNeRF/lib/ops/raymarching (setup.py develop) is deprecated. pip 25.0 will enforce this behaviour change. A possible replacement is to add a pyproject.toml or enable --use-pep517, and use setuptools >= 64. If the resulting installation is not behaving as expected, try using --config-settings editable_mode=compat. Please consult the setuptools documentation for more information. Discussion can be found at https://github.com/pypa/pip/issues/11457
+  Running setup.py develop for raymarching
+Successfully installed raymarching

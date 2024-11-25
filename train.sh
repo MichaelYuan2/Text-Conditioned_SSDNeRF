@@ -1,0 +1,1 @@
+python train.py configs/paper_cfgs/ssdnerf_abotables_uncond.py

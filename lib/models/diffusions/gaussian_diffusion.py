@@ -177,7 +177,7 @@ class GaussianDiffusion(nn.Module):
         std = var_to_tensor(self.sqrt_one_minus_alphas_bar, t.cpu(), tar_shape, device)
         return x_0 * mean + noise * std, mean, std
 
-    def pred_x_0(self, x_t, t, grad_guide_fn=None, concat_cond=None, cfg=dict(), update_denoising_output=False):
+    def pred_x_0(self, x_t, t, grad_guide_fn=None, concat_cond=None, text_cond=None, cfg=dict(), update_denoising_output=False):
         clip_denoised = cfg.get('clip_denoised', True)
         clip_range = cfg.get('clip_range', [-1, 1])
         guidance_gain = cfg.get('guidance_gain', 1.0)
@@ -195,7 +195,7 @@ class GaussianDiffusion(nn.Module):
             grad_enabled_prev = torch.is_grad_enabled()
             torch.set_grad_enabled(True)
 
-        denoising_output = self.denoising(x_t, t, concat_cond=concat_cond)
+        denoising_output = self.denoising(x_t, t, concat_cond=concat_cond, text_cond=text_cond)
 
         if self.denoising_mean_mode.upper() == 'EPS':
             x_0_pred = (x_t - sqrt_one_minus_alpha_bar_t * denoising_output) / sqrt_alpha_bar_t
@@ -419,7 +419,7 @@ class GaussianDiffusion(nn.Module):
             loss_kwargs.update(v_t=mean * noise - std * x_0)
         return self.ddpm_loss(loss_kwargs)
 
-    def forward_train(self, x_0, concat_cond=None, grad_guide_fn=None, cfg=dict(),
+    def forward_train(self, x_0, concat_cond=None, text_cond=None, grad_guide_fn=None, cfg=dict(),
                       x_t_detach=False, **kwargs):
         device = get_module_device(self)
 
@@ -439,7 +439,7 @@ class GaussianDiffusion(nn.Module):
             x_t.detach_()
 
         _, denoising_output = self.pred_x_0(
-            x_t, t, grad_guide_fn=grad_guide_fn, concat_cond=concat_cond,
+            x_t, t, grad_guide_fn=grad_guide_fn, concat_cond=concat_cond, text_cond=text_cond,
             cfg=cfg, update_denoising_output=True)
         loss = self.loss(denoising_output, x_0, noise, t, mean, std)
         log_vars = self.ddpm_loss.log_vars
