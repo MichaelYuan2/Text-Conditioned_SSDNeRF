@@ -94,7 +94,7 @@ def parse_args():
 def setup_multi_processes(cfg):
     # set multi-process start method as `fork` to speed up the training
     if platform.system() != 'Windows':
-        mp_start_method = cfg.get('mp_start_method', 'fork')
+        mp_start_method = cfg.get('mp_start_method', 'spawn')
         mp.set_start_method(mp_start_method)
 
     # disable opencv multithreading to avoid system being overloaded
@@ -124,6 +124,7 @@ def setup_multi_processes(cfg):
 
 
 def main():
+    import torch.multiprocessing as mp
     args = parse_args()
 
     cfg = Config.fromfile(args.config)

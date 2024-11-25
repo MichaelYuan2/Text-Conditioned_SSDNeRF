@@ -36,7 +36,7 @@ class TextDiffusionNeRF(MultiSceneNeRF):
                  diffusion_use_ema=True,
                  freeze_decoder=True,
                  image_cond=False,
-                 text_cond=False,
+                 text_cond=True,
                  code_permute=None,
                  code_reshape=None,
                  autocast_dtype=None,
@@ -131,11 +131,8 @@ class TextDiffusionNeRF(MultiSceneNeRF):
                 concat_cond = concat_cond.tile((diff_image_size[0] // concat_cond.size(-2),
                                                 diff_image_size[1] // concat_cond.size(-1)))
         
-        text_cond = None
         if self.text_cond:
-            descriptions = data['description']
-            text_cond = self.text_encoder.encode(descriptions)
-            
+            text_cond = data['description']
 
         x_t_detach = self.train_cfg.get('x_t_detach', False)
 

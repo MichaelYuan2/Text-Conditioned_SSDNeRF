@@ -7,7 +7,24 @@ from torch.utils.data import Dataset
 
 from mmcv.parallel import DataContainer as DC
 from mmgen.datasets.builder import DATASETS
+from transformers import CLIPTokenizer, CLIPTextModel
+from tqdm import tqdm
 
+class TextToEmbedding:
+    def __init__(self, model_name='openai/clip-vit-base-patch32', device='cpu'):
+        self.device = device
+        # Load the tokenizer and text encoder
+        self.tokenizer = CLIPTokenizer.from_pretrained(model_name)
+        self.text_encoder = CLIPTextModel.from_pretrained(model_name).to(self.device)
+ 
+    def encode(self, texts):
+        """Converts a list of texts to latent embeddings."""
+        # Tokenize text inputs
+        inputs = self.tokenizer(texts, padding=True, truncation=True, return_tensors='pt').to(self.device)
+        # Pass through the text encoder
+        outputs = self.text_encoder(**inputs)
+        # Return the text embeddings
+        return outputs.last_hidden_state.mean(dim=1)  # Mean pooling across token embeddings
 
 def load_intrinsics(path):
     with open(path, 'r') as file:
@@ -17,6 +34,13 @@ def load_intrinsics(path):
         height, width = map(int, file.readline().split())
     fx = fy = f
     return fx, fy, cx, cy, height, width
+
+def load_description(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        description = f.read()
+        if description == '':
+            description = 'table'
+    return description
 
 
 def load_pose(path):
@@ -44,6 +68,7 @@ class TextConditionedSSDNeRF(Dataset):
                  radius=0.5,
                  test_mode=False,
                  step=1,  # only for debug & visualization purpose
+                 text_encoder='openai/clip-vit-base-patch32'
                  ):
         super(TextConditionedSSDNeRF, self).__init__()
         self.data_prefix = data_prefix
@@ -61,6 +86,7 @@ class TextConditionedSSDNeRF(Dataset):
         self.load_test_data = load_test_data
         self.max_num_scenes = max_num_scenes
         self.step = step
+        self.text_encoder = TextToEmbedding(text_encoder)
 
         self.radius = torch.tensor([radius], dtype=torch.float32).expand(3)
         self.center = torch.zeros_like(self.radius)
@@ -92,10 +118,12 @@ class TextConditionedSSDNeRF(Dataset):
     def load_scenes(self):
         if self.cache_path is not None and os.path.exists(self.cache_path):
             scenes = mmcv.load(self.cache_path)
+            print('Dataset loaded from cache.')
         else:
+            print('Dataset loaded from scratch.')
             data_prefix_list = self.data_prefix if isinstance(self.data_prefix, list) else [self.data_prefix]
             scenes = []
-            for data_prefix in data_prefix_list:
+            for data_prefix in tqdm(data_prefix_list):
                 sample_dir_list = os.listdir(data_prefix)
                 # sample_dir_list.sort()
                 for name in sample_dir_list:
@@ -107,9 +135,8 @@ class TextConditionedSSDNeRF(Dataset):
                         image_names.sort()
                         image_paths = []
                         poses = []
-                        description_path = os.path.josin(sample_dir, 'description.txt')
-                        with open(description_path, 'r', encoding='utf-8') as f:
-                            description = f.read()
+                        description_path = os.path.join(sample_dir, 'description.txt')
+                        description = load_description(description_path)
                             
                         for image_name in image_names:
                             image_paths.append(os.path.join(image_dir, image_name))
@@ -218,8 +245,7 @@ class TextConditionedSSDNeRF(Dataset):
             results.update(test_poses=self.test_poses, test_intrinsics=self.test_intrinsics)
         
         if description:
-            results.update(description=description)
-
+            results.update(description=torch.squeeze(self.text_encoder.encode(description).detach()))
         return results
 
     def __len__(self):

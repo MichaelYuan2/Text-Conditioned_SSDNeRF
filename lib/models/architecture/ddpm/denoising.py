@@ -199,7 +199,8 @@ class DenoisingUnetMod(DenoisingUnet):
 
         h, hs = x_t, []
         if self.concat_cond_channels > 0:
-            h = torch.cat([h, concat_cond], dim=1)
+            # h = torch.cat([h, concat_cond], dim=1)
+            h = torch.cat([h, text_cond], dim=1)
         # forward downsample blocks
         for block in self.in_blocks:
             h = block(h, embedding)
