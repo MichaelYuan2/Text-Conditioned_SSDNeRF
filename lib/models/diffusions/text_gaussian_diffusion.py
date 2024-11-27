@@ -305,7 +305,7 @@ class TextGaussianDiffusion(nn.Module):
 
         return x_prev, x_0_pred
 
-    def ddim_sample(self, noise, show_pbar=False, concat_cond=None,
+    def ddim_sample(self, noise, show_pbar=False, concat_cond=None, text_cond=None, 
                     save_intermediates=False, **kwargs):
         device = get_module_device(self)
         x_t = noise
@@ -325,13 +325,13 @@ class TextGaussianDiffusion(nn.Module):
             else:
                 t_prev = -1
             x_t, x_0_pred = self.p_sample_ddim(
-                x_t, t, t_prev, concat_cond=concat_cond[:, cond_step % concat_cond.size(1)] if concat_cond is not None else None,
+                x_t, t, t_prev, concat_cond=concat_cond[:, cond_step % concat_cond.size(1)] if concat_cond is not None else None, text_cond=text_cond, 
                 cfg=self.test_cfg, **kwargs)
             cond_step += 1
             if langevin_steps > 0 and langevin_t_range[0] < t_prev < langevin_t_range[1]:
                 for _ in range(langevin_steps):
                     x_t = self.p_sample_langevin(
-                        x_t, t_prev, concat_cond=concat_cond[:, cond_step % concat_cond.size(1)] if concat_cond is not None else None,
+                        x_t, t_prev, concat_cond=concat_cond[:, cond_step % concat_cond.size(1)] if concat_cond is not None else None, text_cond=text_cond, 
                         cfg=self.test_cfg, **kwargs)
                     cond_step += 1
             if x_0_x_t_list is not None:
@@ -377,7 +377,7 @@ class TextGaussianDiffusion(nn.Module):
 
         return x_prev, x_0_pred
 
-    def ddpm_sample(self, noise, show_pbar=False, concat_cond=None, **kwargs):
+    def ddpm_sample(self, noise, show_pbar=False, concat_cond=None, text_cond=None, **kwargs):
         device = get_module_device(self)
         x_t = noise
         num_timesteps = self.test_cfg.get('num_timesteps', self.num_timesteps)
@@ -389,7 +389,7 @@ class TextGaussianDiffusion(nn.Module):
         cond_step = 0
         for t in timesteps:
             x_t, _ = self.p_sample_ddpm(
-                x_t, t, concat_cond=concat_cond[:, cond_step % concat_cond.size(1)] if concat_cond is not None else None,
+                x_t, t, concat_cond=concat_cond[:, cond_step % concat_cond.size(1)] if concat_cond is not None else None, text_cond=text_cond, 
                 cfg=self.test_cfg, **kwargs)
             cond_step += 1
             if show_pbar:
@@ -408,7 +408,6 @@ class TextGaussianDiffusion(nn.Module):
                 f'Cannot find sample method [{sample_fn_name}] correspond '
                 f'to [{self.sample_method}].')
         sample_fn = getattr(self, sample_fn_name)
-
         outputs = sample_fn(
             noise=noise,
             **kwargs)

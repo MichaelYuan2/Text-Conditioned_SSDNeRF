@@ -223,13 +223,18 @@ class TextDiffusionNeRF(MultiSceneNeRF):
             noise = torch.randn(
                 (num_batches, *self.code_size), device=get_module_device(self))
 
+        if self.text_cond:
+            text_cond = data['description']
+        else:
+            text_cond = None
+        
         with torch.autocast(
                 device_type='cuda',
                 enabled=self.autocast_dtype is not None,
                 dtype=getattr(torch, self.autocast_dtype) if self.autocast_dtype is not None else None):
             code_out = diffusion(
                 self.code_diff_pr(noise), return_loss=False,
-                show_pbar=show_pbar, **kwargs)
+                show_pbar=show_pbar, text_cond=text_cond, **kwargs)
         code_list = code_out if isinstance(code_out, list) else [code_out]
         density_grid_list = []
         density_bitfield_list = []
@@ -292,6 +297,11 @@ class TextDiffusionNeRF(MultiSceneNeRF):
                                             diff_image_size[1] // concat_cond.size(-1)))
         else:
             concat_cond = None
+            
+        if self.text_cond:
+            text_cond = data['description']
+        else:
+            text_cond = None
 
         decoder_training_prev = decoder.training
         decoder.train(True)
@@ -329,7 +339,7 @@ class TextDiffusionNeRF(MultiSceneNeRF):
                     dtype=getattr(torch, self.autocast_dtype) if self.autocast_dtype is not None else None):
                 code = diffusion(
                     self.code_diff_pr(noise), return_loss=False,
-                    grad_guide_fn=grad_guide_fn, concat_cond=concat_cond, **kwargs)
+                    grad_guide_fn=grad_guide_fn, concat_cond=concat_cond, text_cond=text_cond, **kwargs)
 
         decoder.train(decoder_training_prev)
 
@@ -365,6 +375,11 @@ class TextDiffusionNeRF(MultiSceneNeRF):
                                             diff_image_size[1] // concat_cond.size(-1)))
         else:
             concat_cond = None
+            
+        if self.text_cond:
+            text_cond = data['description']
+        else:
+            text_cond = None
 
         decoder_training_prev = decoder.training
         decoder.train(True)
@@ -395,6 +410,7 @@ class TextDiffusionNeRF(MultiSceneNeRF):
                     loss, log_vars = diffusion(
                         self.code_diff_pr(code), return_loss=True,
                         concat_cond=concat_cond[:, inverse_step_id % num_imgs] if concat_cond is not None else None,
+                        text_cond=text_cond,
                         x_t_detach=self.test_cfg.get('x_t_detach', False),
                         cfg=self.test_cfg, **kwargs)
                 loss.backward()

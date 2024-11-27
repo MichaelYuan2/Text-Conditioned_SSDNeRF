@@ -1,4 +1,4 @@
-name = 'ssdnerf_abotables_uncond'
+name = 'ssdnerf_abotables_text'
 
 model = dict(
     type='TextDiffusionNeRF',
