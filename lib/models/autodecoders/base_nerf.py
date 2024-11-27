@@ -536,6 +536,7 @@ class BaseNeRF(nn.Module):
         scene_name = data['scene_name']  # (num_scenes,)
         test_intrinsics = data['test_intrinsics']  # (num_scenes, num_imgs, 4), in [fx, fy, cx, cy]
         test_poses = data['test_poses']
+        scene_description = data['scene_description']
         num_scenes, num_imgs, _, _ = test_poses.size()
 
         if 'test_imgs' in data and not cfg.get('skip_eval', False):
@@ -584,6 +585,8 @@ class BaseNeRF(nn.Module):
                     torch.uint8).cpu().numpy().reshape(num_scenes, num_imgs, h, w, 3)
                 output_viz = np.concatenate([real_imgs_viz, output_viz], axis=-2)
             for scene_id, scene_name_single in enumerate(scene_name):
+                with open(os.path.join(viz_dir, 'scene_' + scene_name_single + '_description.txt'), 'w') as f:
+                    f.write(scene_description[scene_id])
                 for img_id in range(num_imgs):
                     if test_img_paths is not None:
                         base_name = 'scene_' + scene_name_single + '_' + os.path.splitext(

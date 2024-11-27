@@ -123,10 +123,10 @@ class TextConditionedSSDNeRF(Dataset):
             print('Dataset loaded from scratch.')
             data_prefix_list = self.data_prefix if isinstance(self.data_prefix, list) else [self.data_prefix]
             scenes = []
-            for data_prefix in tqdm(data_prefix_list):
+            for data_prefix in data_prefix_list:
                 sample_dir_list = os.listdir(data_prefix)
                 # sample_dir_list.sort()
-                for name in sample_dir_list:
+                for name in tqdm(sample_dir_list):
                     sample_dir = os.path.join(data_prefix, name)
                     if os.path.isdir(sample_dir):
                         intrinsics = load_intrinsics(os.path.join(sample_dir, 'intrinsics.txt'))
@@ -166,7 +166,8 @@ class TextConditionedSSDNeRF(Dataset):
             scene_id=DC(scene_id, cpu_only=True),
             scene_name=DC(
                 '{:04d}'.format(scene_id) if self.scene_id_as_name else scene_name,
-                cpu_only=True))
+                cpu_only=True),
+            scene_description=DC(description, cpu_only=True))
 
         if not self.code_only:
             fx, fy, cx, cy, h, w = scene['intrinsics']
