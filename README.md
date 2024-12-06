@@ -7,16 +7,18 @@ This repository contains the implementation of Text-Conditioned Single-Stage Dif
 This repository is based on the orignal SSDNeRF Pytorch implementation: [[project page](https://lakonik.github.io/ssdnerf)] [[paper](https://arxiv.org/pdf/2304.06714.pdf)].
 
 # Installation
-### Prerequisites
+## Prerequisites
 
 The code has been tested in the environment described as follows:
 
 - Linux (tested on Ubuntu 18.04/20.04 LTS)
 - Python 3.10
-- [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive)
+- [CUDA Toolkit (12.6)](https://developer.nvidia.com/cuda-toolkit-archive)
 - [PyTorch](https://pytorch.org/get-started/previous-versions/) 
 - [MMCV](https://github.com/open-mmlab/mmcv) 
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration) 
+
+Our instruction can work with CUDA version 12.x, if you use an earlier version of CUDA, please refer to [SSDNeRF Readme.md](https://github.com/Lakonik/SSDNeRF).
 
 Other dependencies can be installed via `pip install -r requirements.txt`. 
 
@@ -37,8 +39,8 @@ pip3 install torch torchvision torchaudio
 
 # Install MMCV and MMGeneration
 pip install -U openmim
-mim install mmcv-full==
-git clone https://github.com/open-mmlab/mmgeneration && cd mmgeneration && git checkout v
+mim install mmcv-full
+git clone https://github.com/open-mmlab/mmgeneration && cd mmgeneration
 pip install -v -e .
 cd ..
 
@@ -47,7 +49,7 @@ git clone <this repo> && cd <repo folder>
 pip install -r requirements.txt
 ```
 
-### Compile CUDA packages
+## Compile CUDA packages
 
 There are two CUDA packages from [torch-ngp](https://github.com/ashawkey/torch-ngp) that need to be built locally.
 
@@ -59,11 +61,28 @@ pip install -e .
 cd ../../..
 ```
 
+## Problem Shooting
+You might encounter some problem with NumPy, please be sure the NumPy is under 2.0.0.
+
 # Usage
 ## Data preparation
 We only use ABO Table dataset in this project, for more datasets please refer to [the original SSDNeRF repo](https://github.com/Lakonik/SSDNeRF).
 
-Download `abo_tables.zip` from [here](https://drive.google.com/file/d/1lzw3uYbpuCxWBYYqYyL4ZEFomBOUN323/view?usp=share_link). Unzip it to `./data/abo`. For convenience I have converted the ABO dataset into PixelNeRF's SRN format.
+Download `abo_tables.zip` from [here](https://drive.google.com/file/d/1evnoO2hEz35iLbHF4DQoe-kIpnPUmPtA/view?usp=sharing). Unzip it to `./data/abo`. For convenience we have converted the ABO dataset into PixelNeRF's SRN format. Also, we added the metadata and description extracted from original abo metadata list, so one scene has the following format,
+
+```
+./
+├── abo/
+│   ├── tables_train/
+│   │   ├── sample_name/
+│   │   │   ├── pose/
+│   │   │   ├── rgb/
+│   │   │   ├── description.txt
+│   │   │   ├── intrinsics.txt
+│   │   │   └── metadata.json
+
+…
+```
 
 Extract the downloaded archives according to the following folder tree (or use symlinks).
 
@@ -94,7 +113,7 @@ Run the following command to train a model:
 python train.py /PATH/TO/CONFIG --gpu-ids 0 1
 ```
 
-Note that the total batch size is determined by the number of GPUs you specified. All our models are trained using  GPUs.
+Note that the total batch size is determined by the number of GPUs you specified. All our models are trained using RTX A6000 GPUs.
 
 Since we adopt the density-based NeRF pruning trategy in [torch-ngp](https://github.com/ashawkey/torch-ngp), training would start slow and become faster later, so the initial esitamtion of remaining time is usually over twice as much as the actual training time.
 
@@ -121,7 +140,7 @@ You can then open the saved `.pth` NeRF scenes using the GUI tool `demo/ssdnerf_
 
 ## Visualization
 
-
+![3D Reconstruction Comparison](assets/3d_comparison.png)
 
 
 #
