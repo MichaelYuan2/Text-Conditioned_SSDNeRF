@@ -140,6 +140,8 @@ You can then open the saved `.pth` NeRF scenes using the GUI tool `demo/ssdnerf_
 
 ## Visualization
 
+The `.stl` files used for the 3D reconstruction visualizations can be obtained at `./work_dirs/<cfg name>/save`. You can find online tools (e.g. [https://3dviewer.net/](https://3dviewer.net/)) to visualize the reconstructed scenes in 3D. The text-conditioned scene reconstruction and code visualizations can be directly obtained at `./work_dirs/<cfg name>/viz_uncond`.
+
 ![3D Reconstruction Comparison](assets/3d_comparison.png)
 
 
